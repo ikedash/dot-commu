@@ -69,11 +69,22 @@ public class UserManagementService implements UserDetailsService {
     }
 
     /**
-     * サインイン中のユーザーかどうかを判定する。
+     * サインイン中のユーザーである事を判定する。
+     *
      * @param userId ユーザーID
      * @return true:サインイン中のユーザーである false:サインイン中のユーザーではない
      */
     public boolean isSigninUser(Integer userId) {
         return getSigninUserId().equals(userId);
+    }
+
+    /**
+     * サインイン中のユーザーでない事を判定する。
+     *
+     * @param userId ユーザーID
+     * @return true:サインイン中のユーザーである false:サインイン中のユーザーではない
+     */
+    public boolean isNotSigninUser(Integer userId) {
+        return !isSigninUser(userId);
     }
 }
