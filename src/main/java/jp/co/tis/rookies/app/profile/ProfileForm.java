@@ -211,7 +211,7 @@ public class ProfileForm implements Serializable {
     /**
      * 画像の取得。
      *
-     * @return 設定
+     * @return 画像
      */
     public String getImage() {
         return image;
@@ -220,7 +220,7 @@ public class ProfileForm implements Serializable {
     /**
      * 画像の設定。
      *
-     * @param image 設定
+     * @param image 画像
      */
     public void setImage(String image) {
         this.image = image;

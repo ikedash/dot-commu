@@ -29,61 +29,45 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ProfileFormTest {
     /** バリデータ */
-    private Validator validator;
+    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     /** テスト対象クラス */
-    private ProfileForm profileForm = new ProfileForm();
+    private ProfileForm profileForm;
 
     /** 事前処理 */
     @Before
     public void setup() {
         profileForm = new ProfileForm();
-        validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
-    /**
-     *  SetterとGetterのテスト
-     */
+    /** SetterとGetterのテスト */
     @Test
     public void testSetterAndGetter() {
-        String lastName = "lastName";
-        String firstName = "firstName";
-        String birthplace = "birthplace";
-        String favoriteFood = "favoriteFood";
-        String hatedFood = "hatedFood";
-        String bloodType = "bloodType";
-        String birthday = "birthday";
-        String country = "country";
-        String introduction = "introduction";
-        String image = "image";
-
-        profileForm.setLastName(lastName);
-        profileForm.setFirstName(firstName);
-        profileForm.setBirthplace(birthplace);
-        profileForm.setFavoriteFood(favoriteFood);
-        profileForm.setHatedFood(hatedFood);
-        profileForm.setBloodType(bloodType);
-        profileForm.setBirthday(birthday);
-        profileForm.setCountry(country);
-        profileForm.setIntroduction(introduction);
-        profileForm.setImage(image);
+        profileForm.setLastName("lastName");
+        profileForm.setFirstName("firstName");
+        profileForm.setBirthplace("birthplace");
+        profileForm.setFavoriteFood("favoriteFood");
+        profileForm.setHatedFood("hatedFood");
+        profileForm.setBloodType("bloodType");
+        profileForm.setBirthday("birthday");
+        profileForm.setCountry("country");
+        profileForm.setIntroduction("introduction");
+        profileForm.setImage("image");
 
         // setterで設定した値とgetterで取得した値が等しいことを確認する。
-        assertThat(profileForm.getLastName(), is(lastName));
-        assertThat(profileForm.getFirstName(), is(firstName));
-        assertThat(profileForm.getBirthplace(), is(birthplace));
-        assertThat(profileForm.getFavoriteFood(), is(favoriteFood));
-        assertThat(profileForm.getHatedFood(), is(hatedFood));
-        assertThat(profileForm.getBloodType(), is(bloodType));
-        assertThat(profileForm.getBirthday(), is(birthday));
-        assertThat(profileForm.getCountry(), is(country));
-        assertThat(profileForm.getIntroduction(), is(introduction));
-        assertThat(profileForm.getImage(), is(image));
+        assertThat(profileForm.getLastName(), is("lastName"));
+        assertThat(profileForm.getFirstName(), is("firstName"));
+        assertThat(profileForm.getBirthplace(), is("birthplace"));
+        assertThat(profileForm.getFavoriteFood(), is("favoriteFood"));
+        assertThat(profileForm.getHatedFood(), is("hatedFood"));
+        assertThat(profileForm.getBloodType(), is("bloodType"));
+        assertThat(profileForm.getBirthday(), is("birthday"));
+        assertThat(profileForm.getCountry(), is("country"));
+        assertThat(profileForm.getIntroduction(), is("introduction"));
+        assertThat(profileForm.getImage(), is("image"));
     }
 
-    /**
-     * 入力値が正常な値の場合のケース（正常系）
-     */
+    /** 入力値が正常な値の場合のケース（正常系） */
     @Test
     public void testNormal() {
         profileForm.setLastName("lastName");
@@ -100,13 +84,11 @@ public class ProfileFormTest {
         // バリデート
         Set<ConstraintViolation<ProfileForm>> violations = validator.validate(profileForm);
 
-        // 検証
-        assertThat(violations, hasSize(0));
+        // 入力チェック違反が無いことの検証
+        assertThat(violations, empty());
     }
 
-    /**
-     * 入力値がNullの場合のケース（異常系）
-     */
+    /** 入力値がNullの場合のケース（異常系） */
     @Test
     public void testNullAbNormal() {
         profileForm.setLastName(null);
@@ -131,9 +113,7 @@ public class ProfileFormTest {
         assertViolation(validator.validateProperty(profileForm, "firstName"), NotBlank.class, "必須項目です。");
     }
 
-    /**
-     * 入力値が空文字の場合のケース（異常系）
-     */
+    /** 入力値が空文字の場合のケース（異常系） */
     @Test
     public void testBlankAbNormal() {
         profileForm.setLastName("");
@@ -158,28 +138,30 @@ public class ProfileFormTest {
         assertViolation(validator.validateProperty(profileForm, "firstName"), NotBlank.class, "必須項目です。");
     }
 
-    /**
-     * 生年月日のフォーマットのテスト（異常系）
-     */
+    /** 生年月日のフォーマットのテスト（異常系） */
     @Test
     public void testBirthdayFormatAbNormal() {
-        List<String> inputs = Arrays.asList(
-                "201/03/24", "20178/03/24", // 年の許容桁数-1、許容桁数+1
-                "2017/0/24", "2017/034/24", // 月の許容桁数-1、許容桁数+1
-                "2017/03/2", "2017/03/245", // 日の許容桁数-1、許容桁数+1
-                "201a/03/24", // 数値でない文字が含まれる
-                "2017/0324", "201703/24", // 区切り文字"/"が1つのみ
-                "2017/03/24/", "/2017/03/24", // 区切り文字"/"が3つ
-                "2017:03:24", // 区切り文字の種類が異なる
-                "20170324"); // 区切り文字"/"が無い
+        List<String> dayList = Arrays.asList(
+                // 年の許容桁数-1、許容桁数+1、月の許容桁数-1、許容桁数+1、日の許容桁数-1、許容桁数+1
+                "201/03/24", "20178/03/24", "2017/0/24", "2017/034/24", "2017/03/2", "2017/03/245",
+                // 数値でない文字が含まれる、
+                "201a/03/24",
+                // 区切り文字"/"が1つのみ
+                "2017/0324", "201703/24",
+                // 区切り文字"/"が3つ
+                "2017/03/24/", "/2017/03/24",
+                // 区切り文字の種類が異なる
+                "2017:03:24",
+                // 区切り文字"/"が無い
+                "20170324");
 
-        for (String input : inputs) {
+        for (String day : dayList) {
             // 入力値の設定
-            profileForm.setBirthday(input);
+            profileForm.setBirthday(day);
 
             // 検証
             assertViolation(validator.validateProperty(profileForm, "birthday"),
-                    Pattern.class, "[" + input + "]は[yyyy/MM/dd]に一致しません。");
+                    Pattern.class, "[" + day + "]は[yyyy/MM/dd]に一致しません。");
         }
     }
 
@@ -190,8 +172,7 @@ public class ProfileFormTest {
      * @param type 想定のアノテーション
      * @param msg 想定のエラーメッセージ
      */
-    private void assertViolation(
-            Set<ConstraintViolation<ProfileForm>> violations, Class<?> type, String msg) {
+    private void assertViolation(Set<ConstraintViolation<ProfileForm>> violations, Class<?> type, String msg) {
 
         // NGが1つであることの確認。
         assertThat(violations, hasSize(1));

@@ -91,8 +91,8 @@ public class ProfileController {
      */
     @RequestMapping(value = "update")
     String updateForm(@RequestParam Integer userId, ProfileForm profileForm, Model model) {
-        // サインインユーザーと更新対象が異なる場合、内容画面へ遷移させる。
-        if (!userManegementService.isSigninUser(userId)) {
+        // サインインユーザーと更新対象が異なる場合、内容画面へ遷移する。
+        if (userManegementService.isNotSigninUser(userId)) {
             return "redirect:/profile?userId=" + userId;
         }
 
@@ -100,7 +100,7 @@ public class ProfileController {
         Profile profile = profileService.searchByUserId(userId);
 
         // 検索結果をフォームに移送する。
-        convertToForm(profile, profileForm);
+        convertToProfileForm(profile, profileForm);
 
         // 画面に渡す値を設定する。
         model.addAttribute("userId", profile.getUserId());
@@ -118,15 +118,15 @@ public class ProfileController {
      */
     @RequestMapping(value = "update", method = RequestMethod.POST)
     String update(@RequestParam Integer userId, ProfileForm profileForm, Model model) {
-        // サインインユーザーと更新対象が異なる場合、内容画面へ遷移させる。
-        if (!userManegementService.isSigninUser(userId)) {
+        // サインインユーザーと更新対象が異なる場合、内容画面へ遷移する。
+        if (userManegementService.isNotSigninUser(userId)) {
             return "redirect:/profile?userId=" + userId;
         }
 
         // 入力チェックを行う。
         Set<ConstraintViolation<ProfileForm>> results = validator.validate(profileForm);
 
-        // エラーが存在する場合、エラーメッセージを取得する。
+        // エラーが存在する場合、エラーメッセージを取得し、プロフィール編集画面へ遷移する。
         if (results.size() > 0) {
             Map<String, String> errors = new HashMap<String, String>();
             for (ConstraintViolation<ProfileForm> result : results) {
@@ -140,11 +140,8 @@ public class ProfileController {
         // 更新前のプロフィールを取得する。
         Profile profile = profileService.searchByUserId(userId);
 
-        // フォームの値をエンティティに移送する。
-        convertToEntity(profileForm, profile);
-
-        // 更新を行う。
-        profileService.update(profile);
+        // フォームの値をエンティティに移送し、更新を行う。
+        profileService.update(convertToProfile(profileForm, profile));
 
         return "redirect:/profile?userId=" + userId;
     }
@@ -152,38 +149,41 @@ public class ProfileController {
     /**
      * エンティティの値をフォームに移送する。
      *
-     * @param from 移送元エンティティ
-     * @param to 移送先フォーム
+     * @param source 移送元エンティティ
+     * @param target 移送先フォーム
      */
-    private void convertToForm(Profile from, ProfileForm to) {
-        to.setFirstName(from.getFirstName());
-        to.setLastName(from.getLastName());
-        to.setBirthplace(from.getBirthplace());
-        to.setFavoriteFood(from.getFavoriteFood());
-        to.setHatedFood(from.getHatedFood());
-        to.setBloodType(from.getBloodType());
-        to.setBirthday(from.getBirthday());
-        to.setCountry(from.getCountry());
-        to.setIntroduction(from.getIntroduction());
-        to.setImage(from.getImage());
+    private void convertToProfileForm(Profile source, ProfileForm target) {
+        target.setFirstName(source.getFirstName());
+        target.setLastName(source.getLastName());
+        target.setBirthplace(source.getBirthplace());
+        target.setFavoriteFood(source.getFavoriteFood());
+        target.setHatedFood(source.getHatedFood());
+        target.setBloodType(source.getBloodType());
+        target.setBirthday(source.getBirthday());
+        target.setCountry(source.getCountry());
+        target.setIntroduction(source.getIntroduction());
+        target.setImage(source.getImage());
     }
 
     /**
      * フォームの値をエンティティに移送する。
      *
-     * @param from 移送元フォーム
-     * @param to 移送先エンティティ
+     * @param source 移送元フォーム
+     * @param target 移送先エンティティ
+     * @return プロフィール
      */
-    private void convertToEntity(ProfileForm from, Profile to) {
-        to.setFirstName(from.getFirstName());
-        to.setLastName(from.getLastName());
-        to.setBirthplace(from.getBirthplace());
-        to.setFavoriteFood(from.getFavoriteFood());
-        to.setHatedFood(from.getHatedFood());
-        to.setBloodType(from.getBloodType());
-        to.setBirthday(from.getBirthday());
-        to.setCountry(from.getCountry());
-        to.setIntroduction(from.getIntroduction());
-        to.setImage(from.getImage());
+    private Profile convertToProfile(ProfileForm source, Profile target) {
+        target.setFirstName(source.getFirstName());
+        target.setLastName(source.getLastName());
+        target.setBirthplace(source.getBirthplace());
+        target.setFavoriteFood(source.getFavoriteFood());
+        target.setHatedFood(source.getHatedFood());
+        target.setBloodType(source.getBloodType());
+        target.setBirthday(source.getBirthday());
+        target.setCountry(source.getCountry());
+        target.setIntroduction(source.getIntroduction());
+        target.setImage(source.getImage());
+
+        return target;
     }
 }
