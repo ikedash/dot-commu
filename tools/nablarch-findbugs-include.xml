@@ -1,0 +1,48 @@
+<FindBugsFilter>
+	<!-- PQ-ISA-02 スーパークラスの変数をサブクラスでオーバーライドしようとしないでください -->
+	<Match>
+		<Bug pattern="MF_CLASS_MASKS_FIELD" />
+	</Match>
+
+	<!-- PB-STR-01 文字列リテラルを参照するStringはnewしないでください -->
+	<Match>
+		<Bug pattern="DM_STRING_CTOR,DM_STRING_VOID_CTOR" />
+	</Match>
+
+	<!-- PB-STR-03 固定文字列にはString，可変文字列にはStringBufferを使用してください -->
+	<Match>
+		<Bug pattern="SBSC_USE_STRINGBUFFER_CONCATENATION" />
+	</Match>
+
+	<!-- PB-NUM-05 実数を比較演算子"=="で比較しないでください -->
+	<Match>
+		<Bug pattern="FE_FLOATING_POINT_EQUALITY" />
+	</Match>
+
+	<!-- PB-NUM-07 数値リテラルを参照する基本データ型のラッパクラスはnewしないでください （Java5） -->
+	<Match>
+		<Bug pattern="DM_FP_NUMBER_CTOR,DM_NUMBER_CTOR,DM_BOOLEAN_CTOR" />
+	</Match>
+
+	<!-- PB-NUM-08 数値インスタンスの同値関係を比較する際はequals()メソッドを使用してください （Java5） -->
+	<Match>
+		<Bug pattern="RC_REF_COMPARISON,RC_REF_COMPARISON_BAD_PRACTICE_BOOLEAN" />
+	</Match>
+
+	<!-- PB-LGC-12 リソースをクローズする必要がある場合はtry文のfinally句で確実に解放してください -->
+	<Match>
+		<Bug pattern="OS_OPEN_STREAM,OS_OPEN_STREAM_EXCEPTION_PATH" />
+	</Match>
+	
+	<!-- PB-LGC-08  明示的にfinalize()を呼び出さないでください -->
+	<Match>
+		<Bug pattern="FI_EXPLICIT_INVOCATION" />
+	</Match>
+	
+	
+	
+	
+	<Match>
+		<Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE" />
+	</Match>
+</FindBugsFilter>
