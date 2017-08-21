@@ -17,12 +17,12 @@ import org.hibernate.validator.constraints.NotBlank;
 public class ReportForm implements Serializable {
     /** タイトル */
     @NotBlank
-    @Length(max = 50)
+    @Length(max = 50, message = "50文字以内で入力してください。")
     private String title;
 
     /** 内容 */
     @NotBlank
-    @Length(max = 500)
+    @Length(max = 500, message = "500文字以内で入力してください。")
     private String reportBody;
 
     /** 満足度 */
@@ -31,7 +31,7 @@ public class ReportForm implements Serializable {
 
     /** 理由 */
     @NotBlank
-    @Length(max = 200)
+    @Length(max = 200, message = "200文字以内で入力してください。")
     private String cause;
 
     /** タグ */

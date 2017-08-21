@@ -2,7 +2,6 @@ package jp.co.tis.rookies.app.report;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import jp.co.tis.rookies.domain.model.Report;
-import jp.co.tis.rookies.domain.model.Tag;
 import jp.co.tis.rookies.domain.service.ReportService;
 import jp.co.tis.rookies.domain.service.UserManagementService;
 
@@ -60,10 +58,8 @@ public class ReportCreateController {
      */
     @RequestMapping(value = "create")
     String createForm(Model model) {
-        // 画面に渡すタグ一覧を取得し、Modelに設定
-        List<Tag> tags = reportService.getTags();
-        model.addAttribute("tags", tags);
-
+        model.addAttribute("satisfactions", reportService.getSatisfactions());
+        model.addAttribute("tags", reportService.getTags());
         return "report/createForm";
     }
 
@@ -76,20 +72,16 @@ public class ReportCreateController {
      */
     @RequestMapping(value = "create", method = RequestMethod.POST, params = "confirm")
     String createConfirm(ReportForm reportForm, Model model) {
-        // バリデーションを実行
         Set<ConstraintViolation<ReportForm>> results = validator.validate(reportForm);
 
         if (results.size() > 0) {
             Map<String, String> errors = new HashMap<String, String>();
-            for (ConstraintViolation<ReportForm> constraintViolation : results) {
-                errors.put(constraintViolation.getPropertyPath().toString(),
-                        constraintViolation.getMessage());
-            }
+            results.forEach(constraintViolation -> errors.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()));
+
             model.addAttribute("errors", errors);
             return createRedo(reportForm, model);
         }
 
-        // 登録予定のタグが、タグテーブルに存在するかのチェック処理
         if (!reportService.isExistTag(reportForm.getTag())) {
             Map<String, String> errors = new HashMap<String, String>();
             errors.put("tag", "[" + reportForm.getTag() + "]は存在しないタグです。");
@@ -110,10 +102,8 @@ public class ReportCreateController {
      */
     @RequestMapping(value = "create", method = RequestMethod.POST, params = "redo")
     String createRedo(ReportForm form, Model model) {
-        // タグ一覧を取得し、画面に渡す情報（タグ一覧と入力内容）をModelに設定
-        List<Tag> tags = reportService.getTags();
-        model.addAttribute("tags", tags);
-
+        model.addAttribute("satisfactions", reportService.getSatisfactions());
+        model.addAttribute("tags", reportService.getTags());
         return "report/createForm";
     }
 
@@ -131,10 +121,8 @@ public class ReportCreateController {
 
         if (results.size() > 0) {
             Map<String, String> errors = new HashMap<String, String>();
-            for (ConstraintViolation<ReportForm> constraintViolation : results) {
-                errors.put(constraintViolation.getPropertyPath().toString(),
-                        constraintViolation.getMessage());
-            }
+            results.forEach(constraintViolation -> errors.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()));
+
             model.addAttribute("errors", errors);
             return createRedo(form, model);
         }
@@ -168,14 +156,11 @@ public class ReportCreateController {
      */
     private Report generateReport(ReportForm reportForm) {
         Report report = new Report();
-        // ReportFormの値をReportに詰める。
         report.setTitle(reportForm.getTitle());
         report.setReportBody(reportForm.getReportBody());
         report.setSatisfaction(reportForm.getSatisfaction());
         report.setCause(reportForm.getCause());
         report.setTag(reportForm.getTag());
-
-        // 認証情報からユーザ名を設定する
         report.setUserId(userManegementService.getSigninUserId());
         report.setCreatedAt(new Date());
         return report;

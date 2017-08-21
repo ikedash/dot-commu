@@ -28,46 +28,14 @@
           <p class="error-messages"><c:out value="${errors.reportBody}" /></p>
         </div>
 
-        <c:choose>
-          <c:when test="${reportForm.satisfaction == 'VeryGood'}">
-            <c:set var="satisfaction_VeryGood_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${reportForm.satisfaction == 'Good'}">
-            <c:set var="satisfaction_Good_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${reportForm.satisfaction == 'Medium'}">
-            <c:set var="satisfaction_Medium_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${reportForm.satisfaction == 'Bad'}">
-            <c:set var="satisfaction_Bad_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${reportForm.satisfaction == 'VeryBad'}">
-            <c:set var="satisfaction_VeryBad_checked">checked="checked"</c:set>
-          </c:when>
-        </c:choose>
-
         <div class="field">
           <label>本日の満足度</label>
-          <div class="ui radio checkbox">
-            <input type="radio" name="satisfaction" value="VeryGood" <c:out value="${satisfaction_VeryGood_checked}" />/>
-            <label>VeryGood</label>
-          </div>
-          <div class="ui radio checkbox">
-            <input type="radio" name="satisfaction" value="Good"<c:out value="${satisfaction_Good_checked}" />/>
-            <label>Good</label>
-          </div>
-          <div class="ui radio checkbox">
-            <input type="radio" name="satisfaction" value="Medium"<c:out value="${satisfaction_Medium_checked}"/>/>
-            <label>Medium</label>
-          </div>
-          <div class="ui radio checkbox">
-            <input type="radio" name="satisfaction" value="Bad"<c:out value="${satisfaction_Bad_checked}"/>/>
-            <label>Bad</label>
-          </div>
-          <div class="ui radio checkbox">
-            <input type="radio" name="satisfaction" value="VeryBad"<c:out value="${satisfaction_VeryBad_checked}"/>/>
-            <label>VeryBad</label>
-          </div>
+          <c:forEach var="satisfaction" items="${satisfactions}" >
+            <div class="ui radio checkbox">
+              <input type="radio" name="satisfaction" value="${satisfaction}" <c:if test="${reportForm.satisfaction == satisfaction}">checked</c:if> />
+              <label><c:out value="${satisfaction}" /></label>
+            </div>
+          </c:forEach>
           <p class="error-messages"><c:out value="${errors.satisfaction}" /></p>
         </div>
 
@@ -80,16 +48,15 @@
         <div class="five wide field">
           <label>関連するタグ</label>
           <select class="ui dropdown" name="tag">
-          <c:forEach var="tag" items="${tags}" >
-            <c:choose>
-              <c:when test="${reportForm.tag == tag.tagName}">
-                <option value="${tag.tagName}" selected>${tag.tagName}</option>
-              </c:when>
-              <c:otherwise>
-                <option value="${tag.tagName}">${tag.tagName}</option>
-              </c:otherwise>
-            </c:choose>
-          </c:forEach>
+            <c:forEach var="tag" items="${tags}" >
+              <%-- Eclipseで下記構文だとエラーが出るため仕方なしの実装 --%>
+              <%-- <option value="${tag.tagName}" <c:if test="${reportForm.tag == tag.tagName}">selected</c:if> ><c:out value="${tag.tagName}" /></option> --%>
+              <c:choose>
+                <c:when test="${reportForm.tag == tag.tagName}"><c:set var="select" value="selected" /></c:when>
+                <c:otherwise><c:set var="select" value="" /></c:otherwise>
+              </c:choose>
+              <option value="${tag.tagName}" ${select}><c:out value="${tag.tagName}" /></option>
+            </c:forEach>
           </select>
           <p class="error-messages"><c:out value="${errors.tag}" /></p>
         </div>

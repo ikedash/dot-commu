@@ -1,5 +1,6 @@
 package jp.co.tis.rookies.domain.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -38,9 +39,18 @@ public class ReportService {
     private static final int PAGE_SIZE = 10;
 
     /**
+     * 満足度一覧取得。
+     *
+     * @return 満足度一覧
+     */
+    public List<String> getSatisfactions() {
+        return Arrays.asList("VeryGood", "Good", "Medium", "Bad", "VeryBad");
+    }
+
+    /**
      * タグ一覧取得。
      *
-     * @return 検索結果
+     * @return タグ一覧の検索結果
      */
     public List<Tag> getTags() {
         return tagDao.findAll();
