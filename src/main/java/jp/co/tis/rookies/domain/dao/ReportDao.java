@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,24 +32,16 @@ public class ReportDao {
     /**
      * 主キー検索。
      *
-     * <p/>
-     * 検索結果が0件の場合や、検索失敗の場合は、DataAccessExceptionがスローされる。
-     *
      * @param reportId 検索ID
      * @return 検索結果
      */
     public Report findOne(Integer reportId) {
-        // 実行するSQL。
-        String sql = "SELECT * FROM REPORT WHERE REPORT_ID = :reportId";
-
-        // SQLに埋め込むパラメータに値を設定。
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("reportId", reportId);
 
-        // 検索結果をReportで取得する。
         RowMapper<Report> mapper = new BeanPropertyRowMapper<Report>(Report.class);
 
-        return npJdbcTemplate.queryForObject(sql, params, mapper);
+        return npJdbcTemplate.queryForObject("SELECT * FROM REPORT WHERE REPORT_ID = :reportId", params, mapper);
     }
 
     /**
@@ -60,14 +51,12 @@ public class ReportDao {
      * @return 検索結果
      */
     public Map<String, Object> findOneWithProfileName(Integer reportId) {
-        // 実行するSQL。
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT R.REPORT_ID, R.TITLE, R.REPORT_BODY, ");
         sql.append("R.SATISFACTION, R.CAUSE, R.TAG, R.CREATED_AT, R.USER_ID, P.LAST_NAME, P.FIRST_NAME ");
         sql.append("FROM REPORT R INNER JOIN PROFILE P ON  R.USER_ID = P.USER_ID ");
         sql.append("WHERE R.REPORT_ID = :reportId");
 
-        // SQLに埋め込むパラメータに値を設定。
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("reportId", reportId);
 
@@ -94,35 +83,31 @@ public class ReportDao {
         sql.append("R.SATISFACTION, R.CAUSE, R.TAG, R.CREATED_AT, R.USER_ID, P.LAST_NAME, P.FIRST_NAME ");
         sql.append("FROM REPORT R INNER JOIN PROFILE P ON  R.USER_ID = P.USER_ID ");
 
-        // WHERE句が既に存在するかどうかを保持。
-        boolean isExistWhere = false;
+        // WHERE句が既に存在するかを判定する変数。
+        boolean isNotExistWhere = true;
 
-        // reportSearchFormのlastNameの値がnullでも空でもない場合、SQLを追加する。
-        if (reportSearchForm.getLastName() != null && reportSearchForm.getLastName().length() > 0) {
+        if (hasValue(reportSearchForm.getLastName())) {
             sql.append("WHERE P.LAST_NAME = :lastName ");
-            // WHERE句の存在をTRUEにする。
-            isExistWhere = true;
+            isNotExistWhere = false;
         }
-        if (reportSearchForm.getFirstName() != null && reportSearchForm.getFirstName().length() > 0) {
-            if (!isExistWhere) {
-                // WHERE句が未だ存在しないので、WHERE句から始まるSQL。
-                sql.append("WHERE P.FIRST_NAME = :firstName ");
-                isExistWhere = true;
-            } else {
-                // WHERE句が既に存在するので、AND句から始まるSQL。
+        if (hasValue(reportSearchForm.getFirstName())) {
+            if (isNotExistWhere) {
                 sql.append("AND P.FIRST_NAME = :firstName ");
+                isNotExistWhere = false;
+            } else {
+                sql.append("WHERE P.FIRST_NAME = :firstName ");
             }
         }
-        if (reportSearchForm.getTitle() != null && reportSearchForm.getTitle().length() > 0) {
-            if (!isExistWhere) {
+        if (hasValue(reportSearchForm.getTitle())) {
+            if (isNotExistWhere) {
                 sql.append("WHERE R.TITLE LIKE :title || '%' ");
-                isExistWhere = true;
+                isNotExistWhere = false;
             } else {
                 sql.append("AND R.TITLE LIKE :title || '%' ");
             }
         }
-        if (reportSearchForm.getTag() != null && reportSearchForm.getTag().length() > 0) {
-            if (!isExistWhere) {
+        if (hasValue(reportSearchForm.getTag())) {
+            if (isNotExistWhere) {
                 sql.append("WHERE R.TAG = :tag ");
             } else {
                 sql.append("AND R.TAG = :tag ");
@@ -146,46 +131,47 @@ public class ReportDao {
     /**
      * 件数のカウント。
      *
+     * </p>
+     * PROFILEテーブルのカラム（名字、名前）が検索条件に入っている場合は、結合条件が必要となる。
+     *
      * @param reportSearchForm レポートサーチフォーム
      * @return 件数
      */
     public int count(ReportSearchForm reportSearchForm) {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT COUNT(*) FROM REPORT R ");
+        sql.append("SELECT COUNT(REPORT_ID) FROM REPORT R ");
 
-        boolean isExistWhere = false;
-        if (reportSearchForm.getLastName() != null && reportSearchForm.getLastName().length() > 0) {
-            // PROFILEテーブルのカラムが検索条件の場合は、結合が必要。
+        boolean isNotExistWhere = true;
+        if (hasValue(reportSearchForm.getLastName())) {
             sql.append("INNER JOIN PROFILE P ON  R.USER_ID = P.USER_ID ");
             sql.append("WHERE P.LAST_NAME = :lastName ");
-            isExistWhere = true;
+            isNotExistWhere = false;
         }
-        if (reportSearchForm.getFirstName() != null && reportSearchForm.getFirstName().length() > 0) {
-            if (!isExistWhere) {
+        if (hasValue(reportSearchForm.getFirstName())) {
+            if (isNotExistWhere) {
                 sql.append("INNER JOIN PROFILE P ON  R.USER_ID = P.USER_ID ");
                 sql.append("WHERE P.FIRST_NAME = :firstName ");
-                isExistWhere = true;
+                isNotExistWhere = false;
             } else {
                 sql.append("AND P.FIRST_NAME = :firstName ");
             }
         }
-        if (reportSearchForm.getTitle() != null && reportSearchForm.getTitle().length() > 0) {
-            if (!isExistWhere) {
+        if (hasValue(reportSearchForm.getTitle())) {
+            if (isNotExistWhere) {
                 sql.append("WHERE R.TITLE LIKE :title || '%' ");
-                isExistWhere = true;
+                isNotExistWhere = false;
             } else {
                 sql.append("AND R.TITLE LIKE :title || '%' ");
             }
         }
-        if (reportSearchForm.getTag() != null && reportSearchForm.getTag().length() > 0) {
-            if (!isExistWhere) {
+        if (hasValue(reportSearchForm.getTag())) {
+            if (isNotExistWhere) {
                 sql.append("WHERE R.TAG = :tag ");
             } else {
                 sql.append("AND R.TAG = :tag ");
             }
         }
 
-        // SQLに埋め込むパラメータを、Beanから取得する。
         BeanPropertySqlParameterSource params = new BeanPropertySqlParameterSource(reportSearchForm);
 
         return npJdbcTemplate.queryForObject(sql.toString(), params, Integer.class);
@@ -194,14 +180,15 @@ public class ReportDao {
     /**
      * 登録。
      *
+     * <ol>
+     *   <li>レポートIDについて既に登録されている値をインクリメントして採番する</li>
+     *   <li>レポートテーブルに登録する</li>
+     * </ol>
+     *
      * @param report 登録内容
      */
     public void insert(Report report) {
-        String sqlForReportId = "SELECT MAX(REPORT_ID) FROM REPORT";
-        SqlParameterSource paramForReportId = new MapSqlParameterSource();
-
-        // レポートIDの自動採番。
-        Integer max = npJdbcTemplate.queryForObject(sqlForReportId, paramForReportId, Integer.class);
+        Integer max = npJdbcTemplate.queryForObject("SELECT MAX(REPORT_ID) FROM REPORT", new MapSqlParameterSource(), Integer.class);
         report.setReportId(max == null ? 1 : max + 1);
 
         StringBuilder sql = new StringBuilder();
@@ -209,9 +196,7 @@ public class ReportDao {
         sql.append("REPORT(REPORT_ID, TITLE, REPORT_BODY, SATISFACTION, CAUSE, TAG, CREATED_AT, USER_ID) ");
         sql.append("VALUES(:reportId, :title, :reportBody, :satisfaction, :cause, :tag, :createdAt, :userId)");
 
-        BeanPropertySqlParameterSource params = new BeanPropertySqlParameterSource(report);
-
-        npJdbcTemplate.update(sql.toString(), params);
+        npJdbcTemplate.update(sql.toString(), new BeanPropertySqlParameterSource(report));
     }
 
     /**
@@ -225,9 +210,7 @@ public class ReportDao {
         sql.append("SET TITLE = :title, REPORT_BODY = :reportBody, SATISFACTION = :satisfaction, CAUSE = :cause, ");
         sql.append("TAG = :tag, CREATED_AT = :createdAt, USER_ID = :userId WHERE REPORT_ID = :reportId");
 
-        BeanPropertySqlParameterSource params = new BeanPropertySqlParameterSource(report);
-
-        npJdbcTemplate.update(sql.toString(), params);
+        npJdbcTemplate.update(sql.toString(), new BeanPropertySqlParameterSource(report));
     }
 
     /**
@@ -236,11 +219,19 @@ public class ReportDao {
      * @param reportId 削除するテーブルのユーザーID
      */
     public void delete(Integer reportId) {
-        String sql = "DELETE FROM REPORT WHERE REPORT_ID = :reportId";
-
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("reportId", reportId);
 
-        npJdbcTemplate.update(sql, params);
+        npJdbcTemplate.update("DELETE FROM REPORT WHERE REPORT_ID = :reportId", params);
+    }
+
+    /**
+     * 文字列が値を持っているかを判定する。
+     *
+     * @param target 判定対象文字列
+     * @return 値を持つ場合はtrue
+     */
+    private boolean hasValue(String target) {
+        return !(target == null || target.isEmpty());
     }
 }
