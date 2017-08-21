@@ -26,7 +26,7 @@
             </div>
             <div class="colum">
               <div class="right floated">
-                <fmt:formatDate value="${report.created_at}" pattern="yyyy年MM月dd日(E) HH:MM:ss" timeZone="JST"/>
+                <fmt:formatDate value="${report.created_at}" pattern="yyyy年MM月dd日(E) HH:mm:ss" timeZone="JST"/>
               </div>
             </div>
           </div>
@@ -64,7 +64,7 @@
               </a>
               <div class="metadata">
                 <div class="date">
-                  <fmt:formatDate value="${comment.created_at}" pattern="yyyy年MM月dd日(E) HH:MM:ss" timeZone="JST"/>
+                  <fmt:formatDate value="${comment.created_at}" pattern="yyyy年MM月dd日(E) HH:mm:ss" timeZone="JST"/>
                 </div>
               </div>
               <div class="text">

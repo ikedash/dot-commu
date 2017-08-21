@@ -66,7 +66,7 @@
             <a class="header" href="/profile/?userId=${report.user_id}">
               <c:out value="${report.last_name} ${report.first_name}" /></a>
             <div class="right floated">
-              <fmt:formatDate value="${report.created_at}" pattern="yyyy年MM月dd日(E) HH:MM:ss" timeZone="JST"/>
+              <fmt:formatDate value="${report.created_at}" pattern="yyyy年MM月dd日(E) HH:mm:ss" timeZone="JST"/>
             </div>
             </div>
           </div>
