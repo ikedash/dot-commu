@@ -32,7 +32,7 @@ public class ProfileDao {
      * 検索結果が0件の場合や、検索失敗の場合は、DataAccessExceptionがスローされる。
      *
      * @param userId ユーザーID
-     * @return 主キーに紐づくプロフィールデータ
+     * @return 該当ユーザーのプロフィール
      */
     public Profile findOne(Integer userId) {
         // 検索用のSQLを設定する。
@@ -52,7 +52,7 @@ public class ProfileDao {
      * <p/>
      * 登録失敗の場合は、DataAccessExceptionがスローされる。
      *
-     * @param profile 登録するプロフィールデータ
+     * @param profile 登録プロフィール
      */
     public void insert(Profile profile) {
         // 登録用のSQLを設定する。
@@ -76,7 +76,7 @@ public class ProfileDao {
      * <p/>
      * 更新失敗の場合は、DataAccessExceptionがスローされる。
      *
-     * @param profile 更新するプロフィール
+     * @param profile 更新プロフィール
      */
     public void update(Profile profile) {
         // 更新用のSQLを設定する。

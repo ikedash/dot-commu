@@ -1,5 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 
@@ -61,55 +60,34 @@
 
         <div class="field">
           <label>自己紹介</label>
-          <textarea id="introduction" name="introduction">${profileForm.introduction}</textarea>
+          <textarea id="introduction" name="introduction"><c:out value="${profileForm.introduction}" /></textarea>
         </div>
 
-        <c:choose>
-          <c:when test="${profileForm.image == 'boy1'}">
-            <c:set var="image_boy1_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${profileForm.image == 'boy2'}">
-            <c:set var="image_boy2_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${profileForm.image == 'girl1'}">
-            <c:set var="image_girl1_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${profileForm.image == 'girl2'}">
-            <c:set var="image_girl2_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${profileForm.image == 'girl3'}">
-            <c:set var="image_girl3_checked">checked="checked"</c:set>
-          </c:when>
-          <c:when test="${profileForm.image == 'girl4'}">
-            <c:set var="image_girl4_checked">checked="checked"</c:set>
-          </c:when>
-        </c:choose>
-
-        <div class="four wide field">
+         <div class="four wide field">
           <label>画像</label>
           <table class="ui table"><tr>
             <td>
-              <input type="radio" name="image" value="boy1" <c:out value="${image_boy1_checked}"/>/>
+              <input type="radio" name="image" value="boy1" <c:if test="${profileForm.image == 'boy1'}">checked</c:if>/>
               <img class="ui mini circular image" src="/images/people/small/boy1.png">
             </td>
             <td>
-              <input type="radio" name="image" value="boy2" <c:out value="${image_boy2_checked}"/>/>
+              <input type="radio" name="image" value="boy2" <c:if test="${profileForm.image == 'boy2'}">checked</c:if>/>
               <img class="ui mini circular image" src="/images/people/small/boy2.png">
             </td>
             <td>
-              <input type="radio" name="image" value="girl1" <c:out value="${image_girl1_checked}"/>/>
+              <input type="radio" name="image" value="girl1" <c:if test="${profileForm.image == 'girl1'}">checked</c:if>/>
               <img class="ui mini circular image" src="/images/people/small/girl1.png">
             </td>
             <td>
-              <input type="radio" name="image" value="girl2" <c:out value="${image_girl2_checked}"/>/>
+              <input type="radio" name="image" value="girl2" <c:if test="${profileForm.image == 'girl2'}">checked</c:if>/>
               <img class="ui mini circular image" src="/images/people/small/girl2.png">
             </td>
             <td>
-              <input type="radio" name="image" value="girl3" <c:out value="${image_girl3_checked}"/>/>
+              <input type="radio" name="image" value="girl3" <c:if test="${profileForm.image == 'girl3'}">checked</c:if>/>
               <img class="ui mini circular image" src="/images/people/small/girl3.png">
             </td>
             <td>
-              <input type="radio" name="image" value="girl4" <c:out value="${image_girl4_checked}"/>/>
+              <input type="radio" name="image" value="girl4" <c:if test="${profileForm.image == 'girl4'}">checked</c:if>/>
               <img class="ui mini circular image" src="/images/people/small/girl4.png">
             </td>
           </tr></table>
