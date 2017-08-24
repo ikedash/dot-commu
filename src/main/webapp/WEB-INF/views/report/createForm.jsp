@@ -18,7 +18,7 @@
       <form class="ui form" action="/report/create" method="post">
         <div class="field">
           <label>タイトル</label>
-          <input name="title" value="${reportForm.title}"/>
+          <input type="text" name="title" value="${reportForm.title}"/>
           <p class="error-messages"><c:out value="${errors.title}" /></p>
         </div>
 

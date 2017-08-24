@@ -1,13 +1,7 @@
 package jp.co.tis.rookies.app.report;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -37,9 +31,6 @@ public class ReportCreateController {
     @Autowired
     private UserManagementService userManegementService;
 
-    /** バリデーション用クラス（値の妥当性チェック用クラス） */
-    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
     /**
      * フォームをModelに追加するための設定。
      *
@@ -66,26 +57,14 @@ public class ReportCreateController {
     /**
      * 投稿内容確認表示。
      *
-     * @param reportForm フォーム
+     * @param reportForm レポートフォーム
      * @param model Viewに渡す値
      * @return 遷移先のView名
      */
     @RequestMapping(value = "create", method = RequestMethod.POST, params = "confirm")
     String createConfirm(ReportForm reportForm, Model model) {
-        Set<ConstraintViolation<ReportForm>> results = validator.validate(reportForm);
-
-        if (results.size() > 0) {
-            Map<String, String> errors = new HashMap<String, String>();
-            results.forEach(constraintViolation -> errors.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()));
-
-            model.addAttribute("errors", errors);
-            return createRedo(reportForm, model);
-        }
-
-        if (!reportService.isExistTag(reportForm.getTag())) {
-            Map<String, String> errors = new HashMap<String, String>();
-            errors.put("tag", "[" + reportForm.getTag() + "]は存在しないタグです。");
-
+        Map<String, String> errors = reportService.validateReportForm(reportForm);
+        if (errors != null) {
             model.addAttribute("errors", errors);
             return createRedo(reportForm, model);
         }
@@ -96,12 +75,12 @@ public class ReportCreateController {
     /**
      * 投稿フォーム再表示。
      *
-     * @param form フォーム
+     * @param reportForm レポートフォーム
      * @param model Viewに渡す値
      * @return 遷移先のView名
      */
     @RequestMapping(value = "create", method = RequestMethod.POST, params = "redo")
-    String createRedo(ReportForm form, Model model) {
+    String createRedo(ReportForm reportForm, Model model) {
         model.addAttribute("satisfactions", reportService.getSatisfactions());
         model.addAttribute("tags", reportService.getTags());
         return "report/createForm";
@@ -110,24 +89,19 @@ public class ReportCreateController {
     /**
      * 投稿。
      *
-     * @param form フォーム
+     * @param reportForm レポートフォーム
      * @param model Viewに渡す値
      * @return 遷移先のView名
      */
     @RequestMapping(value = "create", method = RequestMethod.POST)
-    String create(ReportForm form, Model model) {
-        // バリデーションを実行
-        Set<ConstraintViolation<ReportForm>> results = validator.validate(form);
-
-        if (results.size() > 0) {
-            Map<String, String> errors = new HashMap<String, String>();
-            results.forEach(constraintViolation -> errors.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()));
-
+    String create(ReportForm reportForm, Model model) {
+        Map<String, String> errors = reportService.validateReportForm(reportForm);
+        if (errors != null) {
             model.addAttribute("errors", errors);
-            return createRedo(form, model);
+            return createRedo(reportForm, model);
         }
 
-        reportService.create(generateReport(form));
+        reportService.create(generateReport(reportForm));
 
         return "redirect:/report/create?complete";
     }

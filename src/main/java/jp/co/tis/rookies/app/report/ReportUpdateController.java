@@ -1,13 +1,6 @@
 package jp.co.tis.rookies.app.report;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jp.co.tis.rookies.domain.model.Report;
-import jp.co.tis.rookies.domain.model.Tag;
 import jp.co.tis.rookies.domain.service.ReportService;
 import jp.co.tis.rookies.domain.service.UserManagementService;
 
@@ -38,9 +30,6 @@ public class ReportUpdateController {
     /** ユーザー管理サービス */
     @Autowired
     private UserManagementService userManegementService;
-
-    /** バリデーション用クラス（値の妥当性チェック用クラス） */
-    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     /**
      * フォームをModelに追加するための設定。
@@ -64,21 +53,19 @@ public class ReportUpdateController {
     String updateForm(@RequestParam Integer reportId, ReportForm reportForm, Model model) {
         Report report = reportService.searchById(reportId);
 
-        // サインインユーザーと投稿者が異なる場合、内容画面へ遷移させる
-        if (!userManegementService.isSigninUser(report.getUserId())) {
-            return "redirect:/report/{id}";
+        if (userManegementService.isNotSigninUser(report.getUserId())) {
+            return "redirect:/report/detail?reportId=" + reportId;
         }
 
-        // ReportからReportFormに値を移送する。
         reportForm.setTitle(report.getTitle());
         reportForm.setReportBody(report.getReportBody());
         reportForm.setSatisfaction(report.getSatisfaction());
         reportForm.setCause(report.getCause());
         reportForm.setTag(report.getTag());
 
-        List<Tag> tags = reportService.getTags();
         model.addAttribute("reportId", reportId);
-        model.addAttribute("tags", tags);
+        model.addAttribute("satisfactions", reportService.getSatisfactions());
+        model.addAttribute("tags", reportService.getTags());
 
         return "report/updateForm";
     }
@@ -93,16 +80,8 @@ public class ReportUpdateController {
      */
     @RequestMapping(value = "update", method = RequestMethod.POST, params = "confirm")
     String updateConfirm(@RequestParam Integer reportId, ReportForm reportForm, Model model) {
-
-        // バリデーションを実行
-        Set<ConstraintViolation<ReportForm>> result = validator.validate(reportForm);
-
-        if (result.size() > 0) {
-            Map<String, String> errors = new HashMap<String, String>();
-            for (ConstraintViolation<ReportForm> constraintViolation : result) {
-                errors.put(constraintViolation.getPropertyPath().toString(),
-                        constraintViolation.getMessage());
-            }
+        Map<String, String> errors = reportService.validateReportForm(reportForm);
+        if (errors != null) {
             model.addAttribute("errors", errors);
             return updateRedo(reportId, reportForm, model);
         }
@@ -117,15 +96,14 @@ public class ReportUpdateController {
      *
      * @param reportId レポートID
      * @param reportForm レポートフォーム
-     * @param model モデル
-     * @return 遷移先
+     * @param model Viewに渡す値
+     * @return 遷移先のView名
      */
     @RequestMapping(value = "update", method = RequestMethod.POST, params = "redo")
     String updateRedo(@RequestParam Integer reportId, ReportForm reportForm, Model model) {
-        List<Tag> tags = reportService.getTags();
         model.addAttribute("reportId", reportId);
-        model.addAttribute("tags", tags);
-
+        model.addAttribute("satisfactions", reportService.getSatisfactions());
+        model.addAttribute("tags", reportService.getTags());
         return "report/updateForm";
     }
 
@@ -134,33 +112,23 @@ public class ReportUpdateController {
      *
      * @param reportId レポートID
      * @param reportForm レポートフォーム
-     * @param model モデル
-     * @return 遷移先
+     * @param model Viewに渡す値
+     * @return 遷移先のView名
      */
     @RequestMapping(value = "update", method = RequestMethod.POST)
     String update(@RequestParam Integer reportId, ReportForm reportForm, Model model) {
-
-        // バリデーションを実行
-        Set<ConstraintViolation<ReportForm>> result = validator.validate(reportForm);
-
-        if (result.size() > 0) {
-            Map<String, String> errors = new HashMap<String, String>();
-            for (ConstraintViolation<ReportForm> constraintViolation : result) {
-                errors.put(constraintViolation.getPropertyPath().toString(),
-                        constraintViolation.getMessage());
-            }
+        Map<String, String> errors = reportService.validateReportForm(reportForm);
+        if (errors != null) {
             model.addAttribute("errors", errors);
             return updateRedo(reportId, reportForm, model);
         }
 
         Report report = reportService.searchById(reportId);
 
-        // サインインユーザーと投稿者が異なる場合、内容画面へ遷移させる
         if (!userManegementService.isSigninUser(report.getUserId())) {
-            return "redirect:/report/{id}";
+            return "redirect:/report/detail?reportId=" + reportId;
         }
 
-        // ReportFormからReportに値を移送する。
         report.setTitle(reportForm.getTitle());
         report.setReportBody(reportForm.getReportBody());
         report.setSatisfaction(reportForm.getSatisfaction());
@@ -171,5 +139,4 @@ public class ReportUpdateController {
 
         return "redirect:/report/detail?reportId=" + reportId;
     }
-
 }

@@ -1,12 +1,19 @@
 package jp.co.tis.rookies.domain.service;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jp.co.tis.rookies.app.report.ReportForm;
 import jp.co.tis.rookies.app.report.ReportSearchForm;
 import jp.co.tis.rookies.domain.dao.CommentDao;
 import jp.co.tis.rookies.domain.dao.ReportDao;
@@ -57,13 +64,32 @@ public class ReportService {
     }
 
     /**
-     * タグの存在チェック。
+     * レポートフォームの入力内容を精査する処理。
      *
-     * @param tagName タグ名
-     * @return true:存在する。 false:存在しない。
+     * <ol>
+     * <li>項目精査を行う</li>
+     * <li>DB精査（タグ存在チェック）を行う</li>
+     * </ol>
+     *
+     * @param reportForm レポートフォーム
+     * @return エラー内容を返却する。エラーが存在しない場合はnullを返却する。
      */
-    public boolean isExistTag(String tagName) {
-        return tagDao.isExistTag(tagName);
+    public Map<String, String> validateReportForm(ReportForm reportForm) {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<ReportForm>> results = validator.validate(reportForm);
+        if (results.size() > 0) {
+            Map<String, String> errors = new HashMap<String, String>();
+            results.forEach(constraintViolation -> errors.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()));
+            return errors;
+        }
+    
+        if (!tagDao.isExistTag(reportForm.getTag())) {
+            Map<String, String> errors = new HashMap<String, String>();
+            errors.put("tag", "[" + reportForm.getTag() + "]は存在しないタグです。");
+            return errors;
+        }
+    
+        return null;
     }
 
     /**
@@ -73,25 +99,6 @@ public class ReportService {
      */
     public void create(Report report) {
         reportDao.insert(report);
-    }
-
-    /**
-     * 更新。
-     *
-     * @param report レポートエンティティ
-     */
-    public void update(Report report) {
-        reportDao.update(report);
-    }
-
-    /**
-     * レポートIDによる検索。
-     *
-     * @param reportId レポートID
-     * @return 検索結果
-     */
-    public Map<String, Object> searchForDetail(Integer reportId) {
-        return reportDao.findOneWithProfileName(reportId);
     }
 
     /**
@@ -105,6 +112,28 @@ public class ReportService {
     }
 
     /**
+     * 更新。
+     *
+     * @param report レポートエンティティ
+     */
+    public void update(Report report) {
+        reportDao.update(report);
+    }
+
+    /**
+     * データ最大件数から最大ページ数を計算。
+     *
+     * @param reportSearchForm レポートサーチフォーム
+     * @return 最大ページ数
+     */
+    public int calcMaxPage(ReportSearchForm reportSearchForm) {
+        double pageSize = PAGE_SIZE;
+        double allSize = reportDao.count(reportSearchForm);
+    
+        return (int) Math.ceil(allSize / pageSize);
+    }
+
+    /**
      * リスト検索。
      *
      * @param reportSearchForm タグ
@@ -115,6 +144,16 @@ public class ReportService {
         int firstNumber = 1 + PAGE_SIZE * (currentPage - 1);
         int lastNumber = PAGE_SIZE * currentPage;
         return reportDao.findInPage(reportSearchForm, firstNumber, lastNumber);
+    }
+
+    /**
+     * レポートIDによる検索。
+     *
+     * @param reportId レポートID
+     * @return 検索結果
+     */
+    public Map<String, Object> searchForDetail(Integer reportId) {
+        return reportDao.findOneWithProfileName(reportId);
     }
 
     /**
@@ -172,18 +211,5 @@ public class ReportService {
      */
     public Integer convertNullIntoOne(Integer currentPage) {
         return currentPage == null ? 1 : currentPage;
-    }
-
-    /**
-     * データ最大件数から最大ページ数を計算。
-     *
-     * @param reportSearchForm レポートサーチフォーム
-     * @return 最大ページ数
-     */
-    public int calcMaxPage(ReportSearchForm reportSearchForm) {
-        double pageSize = PAGE_SIZE;
-        double allSize = reportDao.count(reportSearchForm);
-
-        return (int) Math.ceil(allSize / pageSize);
     }
 }
