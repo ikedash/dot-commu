@@ -18,13 +18,13 @@
       <form class="ui form" action="/report/detail/updateComment" method="post">
         <div class="field">
           <label>内容</label>
-          <textarea name="commentBody" ><c:out value="${commentForm.commentBody}" /></textarea>
+          <textarea name="commentBody"><c:out value="${commentForm.commentBody}" /></textarea>
           <p class="error-messages"><c:out value="${errors.commentBody}" /></p>
         </div>
+        <input type="hidden" name="reportId" value="${reportId}" />
+        <input type="hidden" name="commentId" value="${commentId}" />
         <div class="field">
-          <input type="hidden" name="reportId" value="${reportId}"/>
-          <input type="hidden" name="commentId" value="${commentId}"/>
-          <input class="ui fluid green button" type="submit" value="保存する" name = "confirm" />
+          <input type="submit" name="confirm" class="ui fluid green button" value="保存する" />
         </div>
         <div class="field">
           <a class="ui fluid button" href="/report/detail?reportId=${reportId}">戻る</a>

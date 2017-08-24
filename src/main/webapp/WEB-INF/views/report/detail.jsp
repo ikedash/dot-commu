@@ -85,7 +85,6 @@
         </c:forEach>
       </div>
 
-      <input type="hidden" name="reportId" value="${report.report_id}" >
       <a href="/report/detail/createComment?reportId=${report.report_id}" class="ui fluid primary submit labeled icon button"><i class="icon edit"></i>コメントする</a>
     </div>
   </div>

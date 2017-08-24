@@ -31,11 +31,7 @@ public class TagDao {
      * @return 検索結果。
      */
     public List<Tag> findAll() {
-        // 検索用のSQLを設定する。
-        String sql = "SELECT * FROM TAG ORDER BY TAG_NAME";
-
-        // 検索を実行し、検索結果を返却する。
-        return npJdbcTemplate.query(sql, new BeanPropertyRowMapper<Tag>(Tag.class));
+        return npJdbcTemplate.query("SELECT * FROM TAG ORDER BY TAG_NAME", new BeanPropertyRowMapper<Tag>(Tag.class));
     }
 
     /**
@@ -45,12 +41,10 @@ public class TagDao {
      * @return true:存在する false:存在しない。
      */
     public boolean isExistTag(String tagName) {
-        String sql = "SELECT count(*) FROM TAG WHERE TAG_NAME = :tagName";
-
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("tagName", tagName);
 
-        int resultCount = npJdbcTemplate.queryForObject(sql, params, Integer.class);
+        int resultCount = npJdbcTemplate.queryForObject("SELECT count(*) FROM TAG WHERE TAG_NAME = :tagName", params, Integer.class);
         return resultCount != 0 ? true : false;
     }
 }

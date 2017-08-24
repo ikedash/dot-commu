@@ -51,6 +51,7 @@
         </div>
       </div>
       <div class="field">
+        <input type="hidden" name="currentPage" value="1" />
         <input class="ui fluid blue button" type="submit" value="検索" />
       </div>
     </form>

@@ -21,12 +21,11 @@
           <textarea name="commentBody"><c:out value="${commentForm.commentBody}" /></textarea>
           <p class="error-messages"><c:out value="${errors.commentBody}" /></p>
         </div>
+        <input type="hidden" name="reportId" value="${reportId}" />
         <div class="field">
-          <input type="hidden" name="reportId" value="${reportId}" >
           <input type="submit" class="ui fluid green button" value="投稿する" />
         </div>
         <div class="field">
-          <input type="hidden" name="reportId" value="${reportId}" >
           <a class="ui fluid button" href="/report/detail?reportId=${reportId}">戻る</a>
         </div>
       </form>

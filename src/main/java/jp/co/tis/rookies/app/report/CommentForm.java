@@ -14,10 +14,11 @@ import org.hibernate.validator.constraints.NotBlank;
 public class CommentForm implements Serializable {
     /** コメント内容 */
     @NotBlank
-    @Length(max = 200)
+    @Length(max = 200, message = "{max}文字以内で入力してください。")
     private String commentBody;
 
-    /** コメント内容を取得する。
+    /**
+     * コメント内容を取得する。
      *
      * @return コメント内容
      */
@@ -25,7 +26,8 @@ public class CommentForm implements Serializable {
         return commentBody;
     }
 
-    /** コメント内容を設定する。
+    /**
+     * コメント内容を設定する。
      *
      * @param commentBody コメント内容
      */

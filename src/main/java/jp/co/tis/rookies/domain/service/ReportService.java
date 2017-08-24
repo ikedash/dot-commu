@@ -13,6 +13,7 @@ import javax.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jp.co.tis.rookies.app.report.CommentForm;
 import jp.co.tis.rookies.app.report.ReportForm;
 import jp.co.tis.rookies.app.report.ReportSearchForm;
 import jp.co.tis.rookies.domain.dao.CommentDao;
@@ -43,7 +44,7 @@ public class ReportService {
     private CommentDao commentDao;
 
     /** ページの表示件数 */
-    private static final int PAGE_SIZE = 10;
+    private static final int NUMBER_PER_PAGE = 10;
 
     /**
      * 満足度一覧取得。
@@ -77,18 +78,19 @@ public class ReportService {
     public Map<String, String> validateReportForm(ReportForm reportForm) {
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<ReportForm>> results = validator.validate(reportForm);
+
         if (results.size() > 0) {
             Map<String, String> errors = new HashMap<String, String>();
             results.forEach(constraintViolation -> errors.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()));
             return errors;
         }
-    
+
         if (!tagDao.isExistTag(reportForm.getTag())) {
             Map<String, String> errors = new HashMap<String, String>();
             errors.put("tag", "[" + reportForm.getTag() + "]は存在しないタグです。");
             return errors;
         }
-    
+
         return null;
     }
 
@@ -127,9 +129,9 @@ public class ReportService {
      * @return 最大ページ数
      */
     public int calcMaxPage(ReportSearchForm reportSearchForm) {
-        double pageSize = PAGE_SIZE;
+        double pageSize = NUMBER_PER_PAGE;
         double allSize = reportDao.count(reportSearchForm);
-    
+
         return (int) Math.ceil(allSize / pageSize);
     }
 
@@ -141,8 +143,8 @@ public class ReportService {
      * @return 検索結果
      */
     public List<Map<String, Object>> searchList(ReportSearchForm reportSearchForm, Integer currentPage) {
-        int firstNumber = 1 + PAGE_SIZE * (currentPage - 1);
-        int lastNumber = PAGE_SIZE * currentPage;
+        int firstNumber = 1 + NUMBER_PER_PAGE * (currentPage - 1);
+        int lastNumber = NUMBER_PER_PAGE * currentPage;
         return reportDao.findInPage(reportSearchForm, firstNumber, lastNumber);
     }
 
@@ -154,6 +156,28 @@ public class ReportService {
      */
     public Map<String, Object> searchForDetail(Integer reportId) {
         return reportDao.findOneWithProfileName(reportId);
+    }
+
+    /**
+     * コメントフォームの入力内容を精査する処理。
+     *
+     * <p/>
+     * 項目精査を行う
+     *
+     * @param commentForm コメントフォーム
+     * @return エラー内容を返却する。エラーが存在しない場合はnullを返却する。
+     */
+    public Map<String, String> validateCommentForm(CommentForm commentForm) {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<CommentForm>> results = validator.validate(commentForm);
+
+        if (results.size() > 0) {
+            Map<String, String> errors = new HashMap<String, String>();
+            results.forEach(constraintViolation -> errors.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()));
+            return errors;
+        }
+
+        return null;
     }
 
     /**
@@ -201,15 +225,5 @@ public class ReportService {
      */
     public Comment searchCommentById(Integer commentId) {
         return commentDao.findOne(commentId);
-    }
-
-    /**
-     * 現在ページがnullの時に1を返却。
-     *
-     * @param currentPage 現在のページ番号
-     * @return ページ数
-     */
-    public Integer convertNullIntoOne(Integer currentPage) {
-        return currentPage == null ? 1 : currentPage;
     }
 }

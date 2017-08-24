@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,26 +30,23 @@ public class CommentDao {
     /**
      * コメント投稿。
      *
+     * <ol>
+     * <li>コメントIDを採番する</li>
+     * <li>コメント投稿する</li>
+     * </ol>
+     *
      * @param comment コメント
      */
     public void insert(Comment comment) {
-        String sqlForCommentId = "SELECT MAX(COMMENT_ID) FROM COMMENTS";
-        SqlParameterSource paramForCommentId = new MapSqlParameterSource();
-
-        // コメントIDの採番を行う
-        Integer currentValue = npJdbcTemplate.queryForObject(sqlForCommentId, paramForCommentId, Integer.class);
-        int nextValue = currentValue == null ? 1 : currentValue + 1;
-        comment.setCommentId(nextValue);
+        Integer currentValue = npJdbcTemplate.queryForObject("SELECT MAX(COMMENT_ID) FROM COMMENTS", new HashMap<String, Object>(), Integer.class);
+        comment.setCommentId(currentValue == null ? 1 : currentValue + 1);
 
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO ");
         sql.append("COMMENTS(COMMENT_ID, REPORT_ID, USER_ID, COMMENT_BODY, CREATED_AT) ");
         sql.append("VALUES(:commentId, :reportId, :userId, :commentBody, :createdAt)");
 
-        // SQLに引き渡すパラメータ
-        BeanPropertySqlParameterSource param = new BeanPropertySqlParameterSource(comment);
-
-        npJdbcTemplate.update(sql.toString(), param);
+        npJdbcTemplate.update(sql.toString(), new BeanPropertySqlParameterSource(comment));
     }
 
     /**
@@ -65,10 +60,7 @@ public class CommentDao {
         sql.append("SET COMMENT_ID = :commentId, COMMENT_BODY = :commentBody, USER_ID = :userId, ");
         sql.append("CREATED_AT = :createdAt, REPORT_ID = :reportId WHERE COMMENT_ID = :commentId");
 
-        // SQLに引き渡すパラメータ
-        BeanPropertySqlParameterSource param = new BeanPropertySqlParameterSource(comment);
-
-        npJdbcTemplate.update(sql.toString(), param);
+        npJdbcTemplate.update(sql.toString(), new BeanPropertySqlParameterSource(comment));
     }
 
     /**
@@ -77,12 +69,10 @@ public class CommentDao {
      * @param commentId コメントID
      */
     public void delete(Integer commentId) {
-        String sql = "DELETE FROM COMMENTS WHERE COMMENT_ID = :commentId";
+        Map<String, Object> param = new HashMap<String, Object>();
+        param.put("commentId", commentId);
 
-        // SQLに引き渡すパラメータ
-        SqlParameterSource param = new MapSqlParameterSource("commentId", commentId);
-
-        npJdbcTemplate.update(sql, param);
+        npJdbcTemplate.update("DELETE FROM COMMENTS WHERE COMMENT_ID = :commentId", param);
     }
 
     /**
@@ -92,15 +82,12 @@ public class CommentDao {
      * @return 検索結果
      */
     public Comment findOne(Integer commentId) {
-        String sql = "SELECT * FROM COMMENTS WHERE COMMENT_ID=:commentId";
+        Map<String, Object> param = new HashMap<String, Object>();
+        param.put("commentId", commentId);
 
-        // SQLに引き渡すパラメータ
-        SqlParameterSource param = new MapSqlParameterSource("commentId", commentId);
-
-        // SELECT結果を格納するオブジェクト
         RowMapper<Comment> mapper = new BeanPropertyRowMapper<Comment>(Comment.class);
 
-        return npJdbcTemplate.queryForObject(sql, param, mapper);
+        return npJdbcTemplate.queryForObject("SELECT * FROM COMMENTS WHERE COMMENT_ID=:commentId", param, mapper);
     }
 
     /**
