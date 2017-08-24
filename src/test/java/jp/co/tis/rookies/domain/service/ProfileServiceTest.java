@@ -17,13 +17,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import jp.co.tis.rookies.domain.dao.ProfileDao;
 import jp.co.tis.rookies.domain.model.Profile;
 
-/*
- * TODO: 新人向け解答の対象クラス。
- * 下記観点を元にテストケースを再検討する。
- * ・渡す引数（検索条件を１つ指定、複数指定）
- * ・帰ってきた結果（１件、複数件）
- * ・ロジック網羅
- */
 /**
  * {@link ProfileService} のテスト。
  *
